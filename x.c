@@ -1050,14 +1050,16 @@ void xinit(int cols, int rows) {
 
   if (!(opt_embed && (parent = strtol(opt_embed, NULL, 0)))) {
     parent = XRootWindow(xw.dpy, xw.scr);
-    xw.depth = 32;
+    /* use a 32-bit TrueColor visual for transparency */
+    XMatchVisualInfo(xw.dpy, xw.scr, 32, TrueColor, &vis);
+    xw.depth = vis.depth;
+    xw.vis = vis.visual;
   } else {
     XGetWindowAttributes(xw.dpy, parent, &attr);
     xw.depth = attr.depth;
+    XMatchVisualInfo(xw.dpy, xw.scr, xw.depth, TrueColor, &vis);
+    xw.vis = vis.visual;
   }
-
-  XMatchVisualInfo(xw.dpy, xw.scr, xw.depth, TrueColor, &vis);
-  xw.vis = vis.visual;
 
   /* font */
   if (!FcInit())
@@ -1092,7 +1094,7 @@ void xinit(int cols, int rows) {
   if (!(opt_embed && (parent = strtol(opt_embed, NULL, 0))))
     parent = root;
   xw.win = XCreateWindow(xw.dpy, root, xw.l, xw.t, win.w, win.h, 0,
-                         XDefaultDepth(xw.dpy, xw.scr), InputOutput, xw.vis,
+                         xw.depth, InputOutput, xw.vis,
                          CWBackPixel | CWBorderPixel | CWBitGravity |
                              CWEventMask | CWColormap,
                          &xw.attrs);
@@ -1102,8 +1104,7 @@ void xinit(int cols, int rows) {
   memset(&gcvalues, 0, sizeof(gcvalues));
   gcvalues.graphics_exposures = False;
   dc.gc = XCreateGC(xw.dpy, xw.win, GCGraphicsExposures, &gcvalues);
-  xw.buf =
-      XCreatePixmap(xw.dpy, xw.win, win.w, win.h, DefaultDepth(xw.dpy, xw.scr));
+  xw.buf = XCreatePixmap(xw.dpy, xw.win, win.w, win.h, xw.depth);
   XSetForeground(xw.dpy, dc.gc, dc.col[defaultbg].pixel);
   XFillRectangle(xw.dpy, xw.buf, dc.gc, 0, 0, win.w, win.h);
 

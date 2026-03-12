@@ -41,6 +41,13 @@
             "MANPREFIX=$(out)/share/man"
           ];
 
+          # 让 tic 把 terminfo 安装到 $out/share/terminfo，
+          # 避免在 Nix sandbox 里尝试写 /homeless-shelter/.terminfo
+          preInstall = ''
+            export TERMINFO="$out/share/terminfo"
+            mkdir -p "$TERMINFO"
+          '';
+
           meta = with pkgs.lib; {
             description = "Simple terminal for X which sucks less";
             homepage = "https://st.suckless.org/";
