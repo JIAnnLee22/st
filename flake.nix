@@ -24,6 +24,7 @@
 
           nativeBuildInputs = with pkgs; [
             pkg-config
+            ncurses
           ];
 
           buildInputs = with pkgs; [
@@ -62,6 +63,7 @@
             xorg.libXrender
             fontconfig
             freetype
+            ncurses
           ];
         };
       }
